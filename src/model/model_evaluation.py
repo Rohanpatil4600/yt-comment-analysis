@@ -128,12 +128,20 @@ def save_model_info(run_id: str, model_path: str, file_path: str) -> None:
 
 
 def main():
-
-
     dagshub.init(repo_owner='Rohanpatil4600', repo_name='YT_comment', mlflow=True)
     mlflow.set_tracking_uri("https://dagshub.com/Rohanpatil4600/YT_comment.mlflow")
 
-    mlflow.set_experiment('dvc-pipeline-runs')
+    # Explicitly check and create experiment
+    experiment_name = "dvc-pipeline-runs2"
+    artifact_location = "s3://yt-comment-1/mlruns"
+
+    try:
+        # Attempt to create the experiment if it doesn't already exist
+        mlflow.create_experiment(experiment_name, artifact_location=artifact_location)
+    except mlflow.exceptions.MlflowException:
+        print(f"Experiment '{experiment_name}' already exists. Setting it as active.")
+    mlflow.set_experiment(experiment_name)
+
     
     with mlflow.start_run() as run:
         try:
