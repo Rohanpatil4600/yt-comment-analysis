@@ -1,0 +1,15 @@
+artifact_uri: s3://yt-comment-1/mlruns/ba2670ed7971468d9c154d355540c7ad/artifacts
+end_time: 1734306439482
+entry_point_name: ''
+experiment_id: '219488310867933173'
+lifecycle_stage: active
+run_id: ba2670ed7971468d9c154d355540c7ad
+run_name: marvelous-steed-290
+run_uuid: ba2670ed7971468d9c154d355540c7ad
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1734306396135
+status: 3
+tags: []
+user_id: rohan

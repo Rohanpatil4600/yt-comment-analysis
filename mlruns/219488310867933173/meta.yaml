@@ -1,0 +1,6 @@
+artifact_location: s3://yt-comment-1/mlruns
+creation_time: 1734306395961
+experiment_id: '219488310867933173'
+last_update_time: 1734306395961
+lifecycle_stage: active
+name: model_building_experiment

@@ -53,7 +53,7 @@ def align_input_to_vocab(vectorizer, preprocessed_comments):
     return input_transformed
 
 # Initialize model and vectorizer
-model, vectorizer = load_model_and_vectorizer("my_model", "2", "./tfidf_vectorizer.pkl")
+model, vectorizer = load_model_and_vectorizer("my_model", "4", "./tfidf_vectorizer.pkl")
 
 @app.route('/predict', methods=['POST'])
 def predict():
