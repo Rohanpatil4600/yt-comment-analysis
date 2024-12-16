@@ -3,11 +3,12 @@ name: CICD Pipeline
 on:
   push:
     branches:
-      - main  # Trigger only on pushes to the 'main' branch
+      - main
 
 jobs:
   model-deployment:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -30,10 +31,16 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Authenticate with DAGsHub
+        run: |
+          git config --global credential.helper store
+          echo "https://dagshub:${{ secrets.DAGSHUB_TOKEN }}@dagshub.com" > ~/.git-credentials
+
       - name: Run pipeline
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-1
         run: |
+          dvc pull  # Ensure DVC data is pulled
           dvc repro
