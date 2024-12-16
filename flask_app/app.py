@@ -47,15 +47,6 @@ def load_model_and_vectorizer(model_name, model_version, vectorizer_path):
     print("Vectorizer loaded successfully.")
     print(f"Vectorizer type: {type(vectorizer)}")
 
-    # Test model prediction with minimal dummy data
-    dummy_data = np.zeros((1, len(vectorizer.get_feature_names_out())))  # Match input shape
-    try:
-        print("Testing model prediction with dummy input...")
-        dummy_prediction = model.predict(dummy_data)
-        print(f"Dummy Prediction Successful: {dummy_prediction}")
-    except Exception as e:
-        print(f"Error during dummy prediction: {e}")
-
     return model, vectorizer
 
 # Ensure input matches the vectorizer's vocabulary
@@ -93,17 +84,16 @@ def predict():
 
         # Align input to the vectorizer's vocabulary
         transformed_comments = align_input_to_vocab(vectorizer, preprocessed_comments)
-        print(f"Input shape: {transformed_comments.shape}")
-        print(f"TF-IDF Vocabulary Size: {len(vectorizer.get_feature_names_out())}")
         transformed_comments_dense = transformed_comments.toarray()  # Convert to dense matrix
 
         # Retrieve feature names from vectorizer
         feature_names = vectorizer.get_feature_names_out()
+        print(f"Number of feature names: {len(feature_names)}")  # Log only the count of feature names
 
         # Create a pandas DataFrame with feature names
         import pandas as pd
         input_df = pd.DataFrame(transformed_comments_dense, columns=feature_names)
-        print(f"Input DataFrame shape: {input_df.shape}")
+        print(f"Input DataFrame shape: {input_df.shape}")  # Log only the DataFrame's shape
 
         # Make predictions
         predictions = model.predict(input_df).tolist()
@@ -113,10 +103,8 @@ def predict():
         return jsonify(response)
 
     except Exception as e:
-        import traceback
-        error_message = traceback.format_exc()
-        print("Full Error Traceback:")
-        print(error_message)
+        print("Error Traceback:")
+        print(traceback.format_exc())  # Print detailed error traceback
         return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
 
 
