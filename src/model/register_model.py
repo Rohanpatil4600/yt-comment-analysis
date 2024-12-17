@@ -1,26 +1,32 @@
-# register model
-
 import json
 import mlflow
 import logging
 import os
 import dagshub
 
-# Set up MLflow tracking URI
+# DAGsHub Authentication
+DAGSHUB_TOKEN = os.getenv("DAGSHUB_TOKEN")  # Fetch token from environment
+if not DAGSHUB_TOKEN:
+    raise ValueError("DAGSHUB_TOKEN environment variable not set!")
+
+# Authenticate with DAGsHub using the token
+dagshub.auth.add_app_token(DAGSHUB_TOKEN)
+
+# Initialize DAGsHub and MLflow
 dagshub.init(repo_owner='Rohanpatil4600', repo_name='YT_comment', mlflow=True)
 mlflow.set_tracking_uri("https://dagshub.com/Rohanpatil4600/YT_comment.mlflow")
+
 # Explicitly check and create experiment
 experiment_name = "dvc-pipeline-runs2"
 artifact_location = "s3://yt-comment-1/mlruns"
 
 try:
-    # Attempt to create the experiment if it doesn't already exist
     mlflow.create_experiment(experiment_name, artifact_location=artifact_location)
 except mlflow.exceptions.MlflowException:
     print(f"Experiment '{experiment_name}' already exists. Setting it as active.")
 mlflow.set_experiment(experiment_name)
 
-# logging configuration
+# Logging configuration
 logger = logging.getLogger('model_registration')
 logger.setLevel('DEBUG')
 
@@ -37,6 +43,7 @@ file_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
+
 def load_model_info(file_path: str) -> dict:
     """Load the model info from a JSON file."""
     try:
@@ -50,6 +57,7 @@ def load_model_info(file_path: str) -> dict:
     except Exception as e:
         logger.error('Unexpected error occurred while loading the model info: %s', e)
         raise
+
 
 def register_model(model_name: str, model_info: dict):
     """Register the model to the MLflow Model Registry."""
@@ -72,6 +80,7 @@ def register_model(model_name: str, model_info: dict):
         logger.error('Error during model registration: %s', e)
         raise
 
+
 def main():
     try:
         model_info_path = 'experiment_info.json'
@@ -82,6 +91,7 @@ def main():
     except Exception as e:
         logger.error('Failed to complete the model registration process: %s', e)
         print(f"Error: {e}")
+
 
 if __name__ == '__main__':
     main()
