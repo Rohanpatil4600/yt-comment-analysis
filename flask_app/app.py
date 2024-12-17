@@ -2,6 +2,7 @@
 
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend before importing pyplot
+from dotenv import load_dotenv
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -46,6 +47,7 @@ def load_model_and_vectorizer(model_name, model_version, vectorizer_path):
     """Load the model and vectorizer."""
     # dagshub.init(repo_owner='Rohanpatil4600', repo_name='YT_comment', mlflow=True)
     # mlflow.set_tracking_uri("https://dagshub.com/Rohanpatil4600/YT_comment.mlflow")
+    load_dotenv()
     dagshub_token=os.getenv("DAGSHUB_TOKEN")
     if not dagshub_token:
         raise EnvironmentError("DAGSHUB_TOKEN environment variable is not set")

@@ -46,6 +46,7 @@ diskcache==5.6.3
 distro==1.9.0
 docker==7.1.0
 docutils==0.16
+python-dotenv
 dpath==2.2.0
 dulwich==0.22.1
 dvc==3.53.0
