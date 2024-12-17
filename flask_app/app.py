@@ -91,7 +91,7 @@ def align_input_to_vocab(vectorizer, preprocessed_comments):
         raise
 
 # Initialize model and vectorizer
-model, vectorizer = load_model_and_vectorizer("my_model", "4", "./tfidf_vectorizer.pkl")
+model, vectorizer = load_model_and_vectorizer("my_model", "8", "./tfidf_vectorizer.pkl")
 @app.route('/predict_with_timestamps', methods=['POST'])
 def predict_with_timestamps():
     data = request.json
