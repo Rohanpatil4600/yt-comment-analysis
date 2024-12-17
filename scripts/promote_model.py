@@ -10,7 +10,6 @@ def setup_mlflow_connection():
     if not dagshub_token:
         pytest.fail("DAGSHUB_TOKEN environment variable is not set")
     
-    # Set up MLflow tracking URI with authentication
     repo_owner = "Rohanpatil4600"
     repo_name = "YT_comment"
     tracking_uri = f"https://{repo_owner}:{dagshub_token}@dagshub.com/{repo_owner}/{repo_name}.mlflow"
@@ -20,64 +19,59 @@ def setup_mlflow_connection():
     
     try:
         client = MlflowClient()
-        # Verify connection
         client.search_registered_models()
         return client
     except Exception as e:
         pytest.fail(f"Failed to connect to MLflow server: {str(e)}")
 
 def test_promote_model_to_production():
-    """Test promoting the latest staging model to production"""
-    # Setup connection
+    """Test promoting the latest model to production and second-latest to archive"""
     client = setup_mlflow_connection()
     model_name = "my_model"
     
     try:
-        # First, get the current production model(s) and archive them
-        current_prod_versions = client.get_latest_versions(model_name, stages=["Production"])
-        for version in current_prod_versions:
-            print(f"Archiving current production model version {version.version}")
-            client.transition_model_version_stage(
-                name=model_name,
-                version=version.version,
-                stage="Archived"
-            )
+        # Get all model versions sorted by version number (descending)
+        all_versions = client.search_model_versions(f"name='{model_name}'")
+        sorted_versions = sorted(all_versions, key=lambda x: int(x.version), reverse=True)
         
-        # Now get the latest staging model
-        staging_versions = client.get_latest_versions(model_name, stages=["Staging"])
-        if not staging_versions:
-            pytest.fail("No model version found in Staging")
+        if len(sorted_versions) < 2:
+            pytest.fail("Need at least 2 model versions to perform promotion")
         
-        staging_version = staging_versions[0].version
-        print(f"Found staging model version {staging_version}")
+        latest_version = sorted_versions[0].version
+        second_latest_version = sorted_versions[1].version
         
-        # Promote staging model to production
-        print(f"Promoting model version {staging_version} to Production")
+        print(f"Latest version: {latest_version}")
+        print(f"Second latest version: {second_latest_version}")
+        
+        # First, transition the second-latest version to Archive
+        print(f"Moving version {second_latest_version} to Archive")
         client.transition_model_version_stage(
             name=model_name,
-            version=staging_version,
+            version=second_latest_version,
+            stage="Archived"
+        )
+        
+        # Then, promote the latest version to Production
+        print(f"Moving version {latest_version} to Production")
+        client.transition_model_version_stage(
+            name=model_name,
+            version=latest_version,
             stage="Production"
         )
         
         # Verify the changes
-        new_prod_versions = client.get_latest_versions(model_name, stages=["Production"])
-        archived_versions = client.get_latest_versions(model_name, stages=["Archived"])
+        updated_latest = client.get_model_version(model_name, latest_version)
+        updated_second_latest = client.get_model_version(model_name, second_latest_version)
         
-        # Verify production model
-        assert len(new_prod_versions) == 1, "Expected exactly one production model"
-        assert new_prod_versions[0].version == staging_version, (
-            f"Expected version {staging_version} in production, "
-            f"but found version {new_prod_versions[0].version}"
-        )
+        assert updated_latest.current_stage == "Production", \
+            f"Expected version {latest_version} to be in Production, but it's in {updated_latest.current_stage}"
         
-        # Verify archived models
-        assert len(archived_versions) == len(current_prod_versions), (
-            "Number of archived models doesn't match previous production models"
-        )
+        assert updated_second_latest.current_stage == "Archived", \
+            f"Expected version {second_latest_version} to be in Archived, but it's in {updated_second_latest.current_stage}"
         
-        print("Model promotion completed successfully:")
-        print(f"- New production model: version {staging_version}")
-        print(f"- Archived models: {[v.version for v in archived_versions]}")
+        print("\nModel promotion completed successfully:")
+        print(f"- Version {latest_version} is now in Production")
+        print(f"- Version {second_latest_version} is now in Archived")
         
     except MlflowException as e:
         pytest.fail(f"MLflow operation failed: {str(e)}")
