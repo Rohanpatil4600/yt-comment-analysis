@@ -123,7 +123,9 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
           DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
-          nohup python flask_app/app.py &
+          nohup python flask_app/app.py > flask.log 2>&1 &
+          echo "Waiting for Flask app to start..."
+          sleep 10  # Wait for 10 seconds to ensure the Flask server starts
 
       - name: Run Flask API tests
         run: |
