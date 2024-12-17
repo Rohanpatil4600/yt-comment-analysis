@@ -1,29 +1,58 @@
-import mlflow.pyfunc
+import os
+import mlflow
 import pytest
 from mlflow.tracking import MlflowClient
+from mlflow.exceptions import MlflowException
 
-# Set your remote tracking URI
-mlflow.set_tracking_uri("https://dagshub.com/Rohanpatil4600/YT_comment.mlflow")
+def setup_mlflow_connection():
+    """Configure MLflow connection with proper authentication"""
+    tracking_uri = "https://dagshub.com/Rohanpatil4600/YT_comment.mlflow"
+    mlflow.set_tracking_uri(tracking_uri)
+    
+    # Verify connection
+    try:
+        client = MlflowClient()
+        client.search_registered_models()
+        return client
+    except Exception as e:
+        pytest.fail(f"Failed to connect to MLflow server: {str(e)}")
+
+def get_model_version(client, model_name, stage):
+    """Get the specified model version with proper error handling"""
+    try:
+        model_versions = client.get_latest_versions(model_name, stages=[stage])
+        if not model_versions:
+            pytest.fail(f"No model versions found for '{model_name}' in '{stage}' stage")
+        return model_versions[0]
+    except MlflowException as e:
+        if e.error_code == "RESOURCE_DOES_NOT_EXIST":
+            pytest.fail(f"Model '{model_name}' not found in registry")
+        raise
 
 @pytest.mark.parametrize("model_name, stage", [
-    ("my_model", "staging"),])
+    ("my_model", "staging"),
+])
 def test_load_latest_staging_model(model_name, stage):
-    client = MlflowClient()
+    """Test loading the latest model version from the specified stage"""
+    # Setup MLflow connection
+    client = setup_mlflow_connection()
     
-    # Get the latest version in the specified stage
-    latest_version_info = client.get_latest_versions(model_name, stages=[stage])
-    latest_version = latest_version_info[0].version if latest_version_info else None
+    # Get latest model version
+    model_version = get_model_version(client, model_name, stage)
     
-    assert latest_version is not None, f"No model found in the '{stage}' stage for '{model_name}'"
-
     try:
-        # Load the latest version of the model
-        model_uri = f"models:/{model_name}/{latest_version}"
+        # Construct model URI and load model
+        model_uri = f"models:/{model_name}/{model_version.version}"
         model = mlflow.pyfunc.load_model(model_uri)
-
-        # Ensure the model loads successfully
+        
+        # Verify model loaded successfully
         assert model is not None, "Model failed to load"
-        print(f"Model '{model_name}' version {latest_version} loaded successfully from '{stage}' stage.")
-
+        
+        # Additional model verification can be added here
+        # For example, checking model signature or testing basic prediction
+        
     except Exception as e:
-        pytest.fail(f"Model loading failed with error: {e}")
+        pytest.fail(f"Failed to load model '{model_name}' version {model_version.version}: {str(e)}")
+
+if __name__ == "__main__":
+    pytest.main([__file__])
