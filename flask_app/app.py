@@ -12,6 +12,7 @@ import mlflow
 import numpy as np
 import joblib
 import re
+import os
 import pandas as pd
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -43,8 +44,18 @@ def preprocess_comment(comment):
 # Load the model and vectorizer
 def load_model_and_vectorizer(model_name, model_version, vectorizer_path):
     """Load the model and vectorizer."""
-    dagshub.init(repo_owner='Rohanpatil4600', repo_name='YT_comment', mlflow=True)
-    mlflow.set_tracking_uri("https://dagshub.com/Rohanpatil4600/YT_comment.mlflow")
+    # dagshub.init(repo_owner='Rohanpatil4600', repo_name='YT_comment', mlflow=True)
+    # mlflow.set_tracking_uri("https://dagshub.com/Rohanpatil4600/YT_comment.mlflow")
+    dagshub_token=os.getenv("DAGSHUB_TOKEN")
+    if not dagshub_token:
+        raise EnvironmentError("DAGSHUB_TOKEN environment variable is not set")
+
+    os.environ["MLFLOW_TRACKING_USERNAME"] =dagshub_token
+    os.environ["MLFLOW_TRACKING_PASSWORD"] =dagshub_token
+    dagshub_url = "https://dagshub.com"
+    repo_owner= "Rohanpatil4600"
+    repo_name= "YT_comment"
+    mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
     client = MlflowClient()
     model_uri = f"models:/{model_name}/{model_version}"
     
