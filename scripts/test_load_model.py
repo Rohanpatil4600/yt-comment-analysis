@@ -9,30 +9,27 @@ mlflow.set_tracking_uri("https://dagshub.com/Rohanpatil4600/YT_comment.mlflow")
     ("my_model", "staging"),])
 def test_load_latest_staging_model(model_name, stage):
     client = MlflowClient()
-
+    
     try:
-        # Get the registered model details
-        registered_model = client.get_registered_model(model_name)
-
-        # Extract all model versions
-        all_versions = registered_model.latest_versions
+        # Fetch all model versions with search_model_versions
+        versions = client.search_model_versions(f"name='{model_name}'")
 
         # Filter versions by stage
         staging_versions = [
-            version for version in all_versions if version.current_stage == stage
+            v for v in versions if v.current_stage == stage
         ]
 
-        # Ensure we have at least one version in staging
+        # Ensure at least one version exists in the specified stage
         assert staging_versions, f"No model found in the '{stage}' stage for '{model_name}'"
 
-        # Get the latest version (highest version number)
+        # Get the latest version (numerically highest)
         latest_version = max(staging_versions, key=lambda v: int(v.version))
 
-        # Load the model using the latest version
+        # Load the model from the Model Registry
         model_uri = f"models:/{model_name}/{latest_version.version}"
         model = mlflow.pyfunc.load_model(model_uri)
 
-        # Ensure the model loads successfully
+        # Validate the model loaded successfully
         assert model is not None, "Model failed to load"
         print(f"Model '{model_name}' version {latest_version.version} loaded successfully from '{stage}' stage.")
 
