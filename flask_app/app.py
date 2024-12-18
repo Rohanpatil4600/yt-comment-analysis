@@ -2,18 +2,17 @@
 
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend before importing pyplot
-from dotenv import load_dotenv
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import io
+import os
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import mlflow
 import numpy as np
 import joblib
 import re
-import os
 import pandas as pd
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -45,9 +44,6 @@ def preprocess_comment(comment):
 # Load the model and vectorizer
 def load_model_and_vectorizer(model_name, model_version, vectorizer_path):
     """Load the model and vectorizer."""
-    # dagshub.init(repo_owner='Rohanpatil4600', repo_name='YT_comment', mlflow=True)
-    # mlflow.set_tracking_uri("https://dagshub.com/Rohanpatil4600/YT_comment.mlflow")
-    load_dotenv()
     dagshub_token=os.getenv("DAGSHUB_TOKEN")
     if not dagshub_token:
         raise EnvironmentError("DAGSHUB_TOKEN environment variable is not set")
@@ -91,7 +87,7 @@ def align_input_to_vocab(vectorizer, preprocessed_comments):
         raise
 
 # Initialize model and vectorizer
-model, vectorizer = load_model_and_vectorizer("my_model", "8", "./tfidf_vectorizer.pkl")
+model, vectorizer = load_model_and_vectorizer("my_model", "4", "./tfidf_vectorizer.pkl")
 @app.route('/predict_with_timestamps', methods=['POST'])
 def predict_with_timestamps():
     data = request.json
