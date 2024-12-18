@@ -115,7 +115,7 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
         run: |
           pytest scripts/promote_model.py -v
-          
+
       - name: Download NLTK stopwords
         run: |
           python -m nltk.downloader stopwords
@@ -149,4 +149,26 @@ jobs:
         run: |
           echo "=== Flask server logs ==="
           cat flask.log
+
+      - name: Login to AWS ECR
+        if: success()
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 977099003933.dkr.ecr.us-east-2.amazonaws.com
+
+      - name: Build Docker image
+        if: success()
+        run: |
+          docker build -t yt-chrome-plug .
+
+      - name: Tag Docker image
+        if: success()
+        run: |
+          docker tag yt-chrome-plug:latest 977099003933.dkr.ecr.us-east-2.amazonaws.com/yt-chrome-plug:latest
+
+      - name: Push Docker image to AWS ECR
+        if: success()
+        run: |
+          docker push 977099003933.dkr.ecr.us-east-2.amazonaws.com/yt-chrome-plug:latest
 
