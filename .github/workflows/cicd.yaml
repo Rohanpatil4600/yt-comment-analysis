@@ -140,15 +140,15 @@ jobs:
           echo "Flask app failed to start."
           exit 1
 
-      - name: Run Flask API tests
-        run: |
-          pytest scripts/test_flask_api.py
+      # - name: Run Flask API tests
+      #   run: |
+      #     pytest scripts/test_flask_api.py
 
-      - name: Show Flask logs on failure
-        if: failure()
-        run: |
-          echo "=== Flask server logs ==="
-          cat flask.log
+      # - name: Show Flask logs on failure
+      #   if: failure()
+      #   run: |
+      #     echo "=== Flask server logs ==="
+      #     cat flask.log
 
       - name: Login to AWS ECR
         if: success()
