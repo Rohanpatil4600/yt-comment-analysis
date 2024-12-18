@@ -118,7 +118,7 @@ jobs:
 
       - name: Download NLTK stopwords
         run: |
-          python -m nltk.downloader stopwords
+          python -m nltk.downloader stopwords wordnet
 
       - name: Start Flask App
         env:
