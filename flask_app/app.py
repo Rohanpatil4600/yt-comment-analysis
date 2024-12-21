@@ -86,6 +86,11 @@ def align_input_to_vocab(vectorizer, preprocessed_comments):
         print(f"Error during alignment to vocabulary: {e}")
         raise
 
+
+@app.route('/')
+def home():
+    return "Welcome to the flask api"
+
 # Initialize model and vectorizer
 model, vectorizer = load_model_and_vectorizer("my_model", "4", "./tfidf_vectorizer.pkl")
 @app.route('/predict_with_timestamps', methods=['POST'])
