@@ -182,7 +182,7 @@ jobs:
       - name: Upload ZIP to S3
         if: success()
         run: |
-          aws s3 cp deployment.zip s3://codedeploybucket/deployment.zip
+          aws s3 cp deployment.zip s3://codedeploybucketyt/deployment.zip
 
       # Deploy to AWS CodeDeploy using the uploaded ZIP file
       - name: Deploy to AWS CodeDeploy
@@ -194,7 +194,7 @@ jobs:
             --application-name YoutubeExtension \
             --deployment-config-name CodeDeployDefault.OneAtATime \
             --deployment-group-name YoutubeExtensionGroup \
-            --s3-location bucket=codedeploybucket,key=deployment.zip,bundleType=zip \
+            --s3-location bucket=codedeploybucketyt,key=deployment.zip,bundleType=zip \
             --file-exists-behavior OVERWRITE \
             --region us-east-2
 
