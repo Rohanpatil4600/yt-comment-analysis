@@ -91,6 +91,10 @@ def align_input_to_vocab(vectorizer, preprocessed_comments):
 def home():
     return "Welcome to the flask api"
 
+@app.route('/health')
+def health():
+    return jsonify({"status":"healthy"}),200
+
 # Initialize model and vectorizer
 model, vectorizer = load_model_and_vectorizer("my_model", "4", "./tfidf_vectorizer.pkl")
 @app.route('/predict_with_timestamps', methods=['POST'])
